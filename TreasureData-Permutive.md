@@ -37,7 +37,58 @@ Initializes the TreasureData Javascript SDK and fetches the sever-side cookie.
 Triggers on **Page View**
 
 ```html
-<script type="text/javascript">!function(t,e){if(void 0===e[t]){e[t]=function(){e[t].clients.push(this),this._init=[Array.prototype.slice.call(arguments)]},e[t].clients=[];for(var r=function(t){return function(){return this["_"+t]=this["_"+t]||[],this["_"+t].push(Array.prototype.slice.call(arguments)),this}},s=["blockEvents","setSignedMode","fetchServerCookie","unblockEvents","setSignedMode","setAnonymousMode","resetUUID","addRecord","fetchGlobalID","fetchUserSegments","set","trackEvent","trackPageview","trackClicks","ready"],n=0;n<s.length;n++){var o=s[n];e[t].prototype[o]=r(o)}var c=document.createElement("script");c.type="text/javascript",c.async=!0,c.src=("https:"===document.location.protocol?"https:":"http:")+"//cdn.treasuredata.com/sdk/2.2/td.min.js";var i=document.getElementsByTagName("script")[0];i.parentNode.insertBefore(c,i)}}("Treasure",this);
+<script type="text/javascript">
+  !(function (t, e) {
+    if (void 0 === e[t]) {
+      (e[t] = function () {
+        e[t].clients.push(this),
+          (this._init = [Array.prototype.slice.call(arguments)]);
+      }),
+        (e[t].clients = []);
+      for (
+        var r = function (t) {
+            return function () {
+              return (
+                (this["_" + t] = this["_" + t] || []),
+                this["_" + t].push(Array.prototype.slice.call(arguments)),
+                this
+              );
+            };
+          },
+          s = [
+            "blockEvents",
+            "setSignedMode",
+            "fetchServerCookie",
+            "unblockEvents",
+            "setSignedMode",
+            "setAnonymousMode",
+            "resetUUID",
+            "addRecord",
+            "fetchGlobalID",
+            "fetchUserSegments",
+            "set",
+            "trackEvent",
+            "trackPageview",
+            "trackClicks",
+            "ready",
+          ],
+          n = 0;
+        n < s.length;
+        n++
+      ) {
+        var o = s[n];
+        e[t].prototype[o] = r(o);
+      }
+      var c = document.createElement("script");
+      (c.type = "text/javascript"),
+        (c.async = !0),
+        (c.src =
+          ("https:" === document.location.protocol ? "https:" : "http:") +
+          "//cdn.treasuredata.com/sdk/2.2/td.min.js");
+      var i = document.getElementsByTagName("script")[0];
+      i.parentNode.insertBefore(c, i);
+    }
+  })("Treasure", this);
 </script>
 
 <script>
@@ -164,6 +215,41 @@ Triggers on [TresureData Email Hash](#tresuredata-email-hash-trigger)
       }]);
     });
   })(window);
+</script>
+```
+
+## TreasureData Get Email Hash Tag
+
+Calls TreasureData with the permutive id to get the email hash and fire the
+[TresureData Email Hash](#tresuredata-email-hash-trigger) custom event.
+
+Triggers on [Permutive Ready](#permutive-ready-trigger)
+
+```html
+<script>
+  (function(win, tdName){
+    var td = win[tdName];
+    function success(values) {
+      if(
+        values.length > 0 &&
+        values[0].attributes &&
+        Values[0].attributes.email_sha256
+      ){
+        var email_sha256 = values[0].attributes.email_sha256;
+        dataLayer.push({
+          "event":"email_hash",
+          "email_sha256": email_sha256
+        });
+      }
+    }
+    function error(err) {
+      console.log(err);
+    }
+    td.fetchUserSegments({
+      audienceToken: {{TreasureData Write Key}},
+      keys: {"permutive_id": {{Permutive User Id}}}
+    }, success, error);
+  })(window, {{TreasureData Instance Name}});
 </script>
 ```
 
