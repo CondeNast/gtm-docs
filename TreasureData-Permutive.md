@@ -28,6 +28,11 @@ https://github.com/treasure-data/td-js-sdk
 To configure Permutive and TreasureData to operate on a page and share the
 required information we will need to add the following to our GTM configuration.
 
+# Sequence Diagram
+
+![Sequence Diagram](diagrams/sequence-diagram.svg) Edit
+[sequence-diagram.drawio](diagrams/sequence-diagram.drawio) with draw.io
+
 # Tags
 
 ## TreasureData Tag
