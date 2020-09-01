@@ -211,7 +211,7 @@ Triggers on [TresureData Email Hash](#tresuredata-email-hash-trigger)
 ```html
 <script>
   (function(win){
-    const permutive = win["permutive"];
+    var permutive = win["permutive"];
     permutive.ready(function() {
       permutive.identify([{
         tag: "email_sha256",
