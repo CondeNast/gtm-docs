@@ -108,6 +108,7 @@ Triggers on **Page View**
     });
 
     function sscSuccessCallback (result) {
+      td.set("$global", "td_ssc_id", result);
       dataLayer.push({
         event: "td_ssc_id_success",
         td_ssc_id: result
