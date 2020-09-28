@@ -7,4 +7,4 @@ address can be associated with the correct record.
 
 ![Newsletters Flow](diagrams/newsletters-flow.svg)
 
-Edit [newsletters-flow.drawio](diagrams/newslwtters-flow.drawio) with draw.io
+Edit [newsletters-flow.drawio](diagrams/newsletters-flow.drawio) with draw.io
