@@ -181,7 +181,7 @@ Triggers on
 <script>
   (function(win,doc,tdName){
     var td = win[tdName];
-
+  
     function googleSyncCallback() {
       var gidsync_url = '//cm.g.doubleclick.net/pixel?';
       var params = [
@@ -197,9 +197,21 @@ Triggers on
       img.src = gidsync_url + params.join('&');
     }
 
-    var td = win[tdName];
-    td.trackPageview({{TreasureData Pageview Event}}, googleSyncCallback);
-  })(window, document, {{TreasureData Instance Name}});
+    // Define event data
+	  var data = {};
+    data["userAgent"] = {{userAgent}};
+    data["pageURL"] = {{pageURL}};
+    data["pageTitle"] = {{pageTitle}};
+    // ...add more values as required here...
+  
+    // Send pageview event along with additional data
+    td.trackEvent(
+      {{Constant - TreasureData Pageview Event}},
+      data,
+      googleSyncCallback,
+      googleSyncCallback
+    );
+  })(window, document, {{Constant - TreasureData Instance Name}});
 </script>
 ```
 
