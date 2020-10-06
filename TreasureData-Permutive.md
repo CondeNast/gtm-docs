@@ -171,7 +171,7 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
 
 ## TresureDate PageView Tag
 
-Calls TreasureData `trackPageview` then passes the TreasuerData user id to
+Calls TreasureData `trackEvent` to record the page view then passes the TreasuerData user id to
 Google.
 
 Triggers on
@@ -206,12 +206,12 @@ Triggers on
 
     // Send pageview event along with additional data
     td.trackEvent(
-      {{Constant - TreasureData Pageview Event}},
+      {{TreasureData Pageview Event}},
       data,
       googleSyncCallback,
       googleSyncCallback
     );
-  })(window, document, {{Constant - TreasureData Instance Name}});
+  })(window, document, {{TreasureData Instance Name}});
 </script>
 ```
 
