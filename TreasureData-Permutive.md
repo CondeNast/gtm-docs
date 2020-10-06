@@ -251,7 +251,7 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
       if(
         values.length > 0 &&
         values[0].attributes &&
-        Values[0].attributes.email_sha256
+        values[0].attributes.email_sha256
       ){
         var email_sha256 = values[0].attributes.email_sha256;
         dataLayer.push({
