@@ -198,12 +198,12 @@ Triggers on
     }
 
     // Define event data
-	  var data = {};
+    var data = {};
     data["userAgent"] = {{userAgent}};
     data["pageURL"] = {{pageURL}};
     data["pageTitle"] = {{pageTitle}};
     // ...add more values as required here...
-  
+
     // Send pageview event along with additional data
     td.trackEvent(
       {{Constant - TreasureData Pageview Event}},
