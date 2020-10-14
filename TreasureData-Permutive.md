@@ -165,6 +165,11 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
   (function(win,doc,tdName){
     var td = win[tdName];
     td.set('$global', 'td_unknown_id', {{Permutive User ID}});
+    permutive.identify([{
+      tag: "td_unknown_id",
+      id: {{Permutive User ID}},
+      priority: 0
+    }]);
   })(window, document, {{TreasureData Instance Name}});
 </script>
 ```
