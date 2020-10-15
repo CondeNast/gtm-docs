@@ -131,6 +131,7 @@ Triggers on **Page View**
 
 Waits for permutive to be ready and then pushes the permutive user id into the
 data layer so other tags can use it.
+Duplicates the same ID value with the name `td_unknown_id`.
 
 Trigger as soon as `permutive` is defined.
 
@@ -147,6 +148,14 @@ html `<head>` tag.
         event: "permutive_ready",
         permutive_user_id: permutive.context.user_id,
       });
+  
+      // Requirement of TreasureData that permutive duplicates it's own ID with a diffrent name.
+      permutive.identify([{
+        tag: "td_unknown_id",
+        id: permutive.context.user_id,
+        priority: 0
+      }]);
+  
     });
   } else {
     console.error("Permutive not available");
@@ -165,11 +174,6 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
   (function(win,doc,tdName){
     var td = win[tdName];
     td.set('$global', 'td_unknown_id', {{Permutive User ID}});
-    permutive.identify([{
-      tag: "td_unknown_id",
-      id: {{Permutive User ID}},
-      priority: 0
-    }]);
   })(window, document, {{TreasureData Instance Name}});
 </script>
 ```
