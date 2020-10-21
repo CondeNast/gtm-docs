@@ -17,7 +17,7 @@ Such other third party websites websites are generally operated by external part
 subscriptions, or offer other ecommerce activities such as merchandise stores or private membership clubs.
 Examples include:
 
-- [www.magazineboutique.co.uk]0 - Operated by CDS UK for the British market
+- [www.magazineboutique.co.uk](https://www.magazineboutique.co.uk) - Operated by CDS UK for the British market
 - [editorsclub.gq-magazine.co.uk](https://editorsclub.gq-magazine.co.uk) - Operated by Pugpig for the British market
 - [f.msgs.jp](https://f.msgs.jp/webapp/form/16237_nay_596/index.do?code=lp_member&_ga=2.6397490.1635249738.1599243470-1948917294.1592946764) - operated by (?) in Japan for Vogue Japan print subs
 
