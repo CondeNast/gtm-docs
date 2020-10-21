@@ -34,9 +34,9 @@ achieve the exact same goals, and are easy enough to  apply a broad-strokes appr
 Condé Nast to quite easily get an identical TD, Permutive, GA, and so on, setup running across all of the
 editorial sites.
 
-Questions, however, are raised surrouding the scalability of the approach. Each brand, in each market, has a
+It is worth questioning the scalability of the approach, however. Each brand, in each market, has a
 manually configured container, and another on top for AMP, alongside some other stragglers. At present, this
-comprises 40-45 containers, all managed and maintained by hand.
+comprises 40-45 containers (for Vogue and GQ), all managed and maintained by hand.
 
 Scalability aside, the approach makes sense - a fairly standardised pattern. No comment is made as to the cleanliness
 of the code within tags, naming conventions, and so on, although these should be reviewed in time by engineering.
