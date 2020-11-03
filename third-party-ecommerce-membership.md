@@ -30,7 +30,7 @@ In a globally owned GTM account there is a set of fairly standardised tags, trig
 across Condé Nast's editorial websites. This makes sense; owned-and-operated editorial websites _mostly_ work
 the same way (Compass, Verso, and other mature markets), use the same cookie management platform (CMP) - OneTrust -,
 achieve the exact same goals, and are easy enough to  apply a broad-strokes approach to tagging. This allows
-Condé Nast to quite easily get an identical TD, Permutive, GA, and so on, setup running across all of the
+Condé Nast to quite easily get an identical TD, Permutive, Google Analytics, and so on, setup running across all of the
 editorial sites.
 
 It is worth questioning the scalability of this approach, however. Each brand in each market has a
@@ -49,13 +49,13 @@ Third party websites by nature are all different, and additionally the vendors t
 cookie management platforms. The differences do not end there, though - Condé's relationship
 with vendors is also different in every case. Some vendors can react to change requests quickly, others want more time and
 wish to charge project management fees and development time for even small changes and often won't commit to
-deadlines.
+deadlines. Obviously, every vendor is a fresh start and so there is little in the way of scalability.
 
 In some reported cases vendors have refused to run any code that Condé supplies - it is after all their product and
-their website, so this is partially understandable at least. (Condé obviously cannot cater for this scenario).
+their website, so this is partially understandable at least. Such vendors are clearly out of scope.
 
 It is also worth noting that within third party vendors there is not always working knowledge of GTM, therefore a requirement
-to run and interact with GTM can include extra time for the vendor to learn and understand GTM. This is not in the vendor's
+to run and interact with GTM can include extra time for the vendor to learn and understand GTM. This is also not in the vendor's
 interests: from its point of view, it wants to throw tags in pages as quickly as possible and move on.
 
 Given the differences in first and third party sites, and Condé's desire to run GTM on third party sites, it appears that
@@ -63,6 +63,24 @@ the ideal secenario is:
 
 * Third parties do not have to learn GTM
 * Third parties have to do as little as possible to integrate
-* As much as possible is owned managed by Condé via GTM, not by the third party
+* As much as possible is owned managed by Condé via GTM, and as little as possible by the third party
 * Any CMP can be used
+* One container to be used for all third party sites
 
+## Proposed solution
+
+Condé should load everything - TD, Permutive, etc - through GTM. It should do this through one container by way of shipping
+a small JS library which will abtract away GTM from the third party developer's point of view.
+
+The third party would "register" with the library (i.e., provide which market and brand it is acting as) and then request or signal consent.
+
+Requesting consent would signal to the library that Condé should inject OneTrust. Signalling consent would say to the library
+that the vendor's own CMP has received the necessary consent for loading the scripts Condé wishes to load (commonly pigeon-holed
+to "targetting" and "performance").
+
+Upon consent being gained or signalled, Condé would load TD, Permutive and whatever else.
+
+Additionally, the third party developers would be required to call various methods offered by the library upon
+various e-commerce events happening: add to basket, checkout, etc.
+
+## POC
