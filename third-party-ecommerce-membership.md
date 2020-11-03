@@ -18,7 +18,7 @@ Examples of third party websites operated on Condé Nast's behalf include:
 
 - [www.magazineboutique.co.uk](https://www.magazineboutique.co.uk) - Operated by CDS UK for the British market
 - [editorsclub.gq-magazine.co.uk](https://editorsclub.gq-magazine.co.uk) - Operated by Pugpig for the British market
-- [f.msgs.jp](https://f.msgs.jp/webapp/form/16237_nay_596/index.do?code=lp_member&_ga=2.6397490.1635249738.1599243470-1948917294.1592946764) - operated by (?) in Japan for Vogue Japan print subs
+- [f.msgs.jp](https://f.msgs.jp/webapp/form/16237_nay_596/index.do?code=lp_member) - Vogue member club sign-up operated by msgs.jp (?)
 
 Other similar examples exist in all markets, including the US of A.
 
@@ -28,23 +28,41 @@ A full list (~70 websites) is available in this [google sheet tab](https://docs.
 
 In a globally owned GTM account there is a set of fairly standardised tags, triggers and variables set up for use
 across Condé Nast's editorial websites. This makes sense; owned-and-operated editorial websites _mostly_ work
-the same way (Compass, Verso, and other mature markets), use the same cookie management platform (OneTrust),
+the same way (Compass, Verso, and other mature markets), use the same cookie management platform (CMP) - OneTrust -,
 achieve the exact same goals, and are easy enough to  apply a broad-strokes approach to tagging. This allows
 Condé Nast to quite easily get an identical TD, Permutive, GA, and so on, setup running across all of the
 editorial sites.
 
 It is worth questioning the scalability of this approach, however. Each brand in each market has a
 manually configured container, and another alongside for AMP, as well as some other stragglers. At present, this
-comprises 40-45 containers (for Vogue and GQ), all managed and maintained individually by hand.
+comprises 40-45 containers (for Vogue and GQ), all managed and maintained individually by hand. This may collapse
+somewhat as some brand sites are consolidated by language.
 
-Scalability aside, the approach makes sense - a fairly standardised pattern. No comment is made as to the cleanliness
+Scalability aside, the approach makes sense, it is a fairly standardised pattern. No comment is made as to the cleanliness
 of the code within tags, naming conventions, and so on, although these should be reviewed in time by engineering.
 
 ## GTM for third parties
 
-Compared with editorial sites owned by Condé Nast, third parties present almost the opposite scenario. Third party
-websites by nature are all different. Furthermore, the companies that operate them may run their own cookie 
-management 
+Compared with editorial sites owned by Condé Nast, third parties present almost the opposite scenario.
 
-Not only are they all completely different (compare [Magazine Boutique](https://www.magazineboutique.co.uk) with
-[PresidentStore.jp](https://presidentstore.jp/cart_index.html?request=insert&item_cd=GQ01NRG)
+Third party websites by nature are all different, and additionally the vendors that operate them may run their own
+cookie management platforms. The differences do not end there, though - Condé's relationship
+with vendors is also different in every case. Some vendors can react to change requests quickly, others want more time and
+wish to charge project management fees and development time for even small changes and often won't commit to
+deadlines.
+
+In some reported cases vendors have refused to run any code that Condé supplies - it is after all their product and
+their website, so this is partially understandable at least. (Condé obviously cannot cater for this scenario).
+
+It is also worth noting that within third party vendors there is not always working knowledge of GTM, therefore a requirement
+to run and interact with GTM can include extra time for the vendor to learn and understand GTM. This is not in the vendor's
+interests: from its point of view, it wants to throw tags in pages as quickly as possible and move on.
+
+Given the differences in first and third party sites, and Condé's desire to run GTM on third party sites, it appears that
+the ideal secenario is:
+
+* Third parties do not have to learn GTM
+* Third parties have to do as little as possible to integrate
+* As much as possible is owned managed by Condé via GTM, not by the third party
+* Any CMP can be used
+
