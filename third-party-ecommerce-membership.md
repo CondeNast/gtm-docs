@@ -110,7 +110,7 @@ An example vendor site might look like this:
     <title>Membership club</title>
     <script>
       // listen for event fired by CNEcommerce library
-      window.addEventListener('cnecom_ready') {
+      window.addEventListener('cnecom_ready', function (event) {
         // register site
         window.CNEcommerce.register("gb", "gq", "editors_club");
         
