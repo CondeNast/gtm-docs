@@ -98,3 +98,48 @@ The above appears to satisfy all of the desired goals:
 * With the ability to identify a site by brand, market and ecommerce intent, one container can be used across all ecommerce sites
 
 ## POC
+
+An initial go at a library, loaded always via GTM, could look like the code [in this file](https://github.com/CondeNast/gtm-docs/edit/third-party-tagging/cnecom.js).
+
+An example vendor site might look like this:
+
+```
+<!doctype html>
+<html>
+  <head>
+    <title>Membership club</title>
+    <script>
+      // listen for event fired by CNEcommerce library
+      window.addEventListener('cnecom_ready') {
+        // register site
+        window.CNEcommerce.register("gb", "gq", "editors_club");
+        
+        // load CMP, because we don't have native CMP on this example site
+        window.requestConsent();
+        
+        // attach add to basket event to add to basket button
+        document.getElementById("add-to-basket").addEventListener('click', function (event) {
+          // upon adding to basket, send details...
+          window.CNEcommerce.addToBasket(...);
+        });
+      };
+    </script>
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
+  </head>
+  
+  <body>
+    <form action="">
+      ...
+      <button id="add-to-basket">Add to basket</button>
+    </form>
+  </body>
+  
+</html>
+```
