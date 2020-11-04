@@ -37,7 +37,8 @@ required information we will need to add the following to our GTM configuration.
 
 ## TreasureData Tag
 
-Initializes the TreasureData Javascript SDK and fetches the sever-side cookie.
+Initializes the TreasureData Javascript SDK and fetches the sever-side cookie. 
+Needs to be under Targeting Consent
 
 Triggers on **Page View**
 
@@ -139,23 +140,14 @@ Conventionally this would be **Page View** however for the
 [Compass Rocket](https://github.com/condenast/rocket) application this needs to
 be **Window Load** because the permutive implementation is not included in the
 html `<head>` tag.
-
+Note for Sam : removing the permutive.context.user_id allows to remove any consent type. it's just a technical event
 ```html
 <script>
   if (permutive && permutive.ready) {
     permutive.ready(function () {
       dataLayer.push({
         event: "permutive_ready",
-        permutive_user_id: permutive.context.user_id,
       });
-  
-      // Requirement of TreasureData that permutive duplicates it's own ID with a diffrent name.
-      permutive.identify([{
-        tag: "td_unknown_id",
-        id: permutive.context.user_id,
-        priority: 0
-      }]);
-  
     });
   } else {
     console.error("Permutive not available");
@@ -172,8 +164,15 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
 ```html
 <script>
   (function(win,doc,tdName){
-    var td = win[tdName];
-    td.set('$global', 'td_unknown_id', {{Permutive User ID}});
+    
+     // Requirement of TreasureData that permutive duplicates it's own ID with a diffrent name.
+      permutive.identify([{
+        tag: "td_unknown_id",
+        id: permutive.context.user_id,
+        priority: 0
+      }]);  
+  var td = win[tdName]; 
+  td.set('$global', 'td_unknown_id', permutive.context.user_id);
   })(window, document, {{TreasureData Instance Name}});
 </script>
 ```
@@ -224,26 +223,7 @@ Triggers on
 </script>
 ```
 
-## Permutive Set Email Hash Tag
 
-Calls Permutive `identify` to pass the email hash.
-
-Triggers on [TresureData Email Hash](#tresuredata-email-hash-trigger)
-
-```html
-<script>
-  (function(win){
-    var permutive = win["permutive"];
-    permutive.ready(function() {
-      permutive.identify([{
-        tag: "email_sha256",
-        id: {{Email Hash}},
-        priority: 1
-      }]);
-    });
-  })(window);
-</script>
-```
 
 ## TreasureData Get Email Hash Tag
 
@@ -256,7 +236,8 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
 <script>
   (function(win, tdName){
     var td = win[tdName];
-    function success(values) {
+  var permutive = win["permutive"];  
+  function success(values) {
       if(
         values.length > 0 &&
         values[0].attributes &&
@@ -265,16 +246,21 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
         var email_sha256 = values[0].attributes.email_sha256;
         dataLayer.push({
           "event":"email_hash",
-          "email_sha256": email_sha256
+         // removing any unique identifier from the Dl is a good pratice (privacy first) "email_sha256": email_sha256
         });
-      }
+      
+      permutive.identify([{
+        tag: "email_sha256",
+        id: email_sha256,
+        priority: 1
+      }]);  
     }
     function error(err) {
       console.log(err);
     }
     td.fetchUserSegments({
       audienceToken: {{TreasureData Write Key}},
-      keys: {"permutive_id": {{Permutive User Id}}}
+      keys: {"permutive_id": permutive.context.user_id}
     }, success, error);
   })(window, {{TreasureData Instance Name}});
 </script>
@@ -329,27 +315,7 @@ Fires when the user's email hash is received.
 
 # Variables
 
-## Email Hash
 
-Hash of the user's email address.
-
-| Property            | Value               |
-| ------------------- | ------------------- |
-| Variable Type       | Data Layer Variable |
-| Data Layer Variable | `email_sha256`      |
-| Data Layer Version  | Version 2           |
-| Set Default Value   | No                  |
-
-## Permutive User ID
-
-Unique ID of the user received from Permutive.
-
-| Property            | Value               |
-| ------------------- | ------------------- |
-| Variable Type       | Data Layer Variable |
-| Data Layer Variable | `permutive_user_id` |
-| Data Layer Version  | Version 2           |
-| Set Default Value   | No                  |
 
 ## TreasureData Database
 
