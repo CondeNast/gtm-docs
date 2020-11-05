@@ -111,8 +111,26 @@ Triggers on consent
       useServerSideCookie: true
     });
 
+    // Callback from TreasureData trackEvent
+    function googleSyncCallback() {
+
+      // Invokes a request to google ad network
+      var gidsync_url = '//cm.g.doubleclick.net/pixel?';
+      var params = [
+        'google_nid=treasuredata_dmp',
+        'google_cm',
+        'td_write_key=' + {{TreasureData Write Key}},
+        'td_global_id=td_global_id',
+        'td_client_id=' + td.client.track.uuid,
+        'td_host=' + doc.location.host,
+        'account=' + {{TreasureData Account ID}}
+      ];
+      var img = new Image();
+      img.src = gidsync_url + params.join('&');
+    }
+
     // Attempt to send the treasure data pageView event if all the required values have been populated
-    function tryTrackPaveView(){
+    function tryTrackPageView(){
 
       // Check all the required values are set before sending the PageView event.
       if(!tdSscSet || !permutiveIdSet){
@@ -147,7 +165,7 @@ Triggers on consent
       // });
 
       tdSscSet = true;
-      tryTrackPaveView();
+      tryTrackPageView();
     }
 
     // Handle an unsuccessful attempt to get the Server-Side-Cookie identifier from TreasureData
@@ -158,7 +176,7 @@ Triggers on consent
       // });
 
       tdSscSet = true;
-      tryTrackPaveView();
+      tryTrackPageView();
     }
 
     // Handle a successful attempt to get the user segments from TreasureData
@@ -190,24 +208,6 @@ Triggers on consent
       console.log(err);
     }
 
-    // Callback from TreasureData trackEvent
-    function googleSyncCallback() {
-
-      // Invokes a request to google ad network
-      var gidsync_url = '//cm.g.doubleclick.net/pixel?';
-      var params = [
-        'google_nid=treasuredata_dmp',
-        'google_cm',
-        'td_write_key=' + {{TreasureData Write Key}},
-        'td_global_id=td_global_id',
-        'td_client_id=' + td.client.track.uuid,
-        'td_host=' + doc.location.host,
-        'account=' + {{TreasureData Account ID}}
-      ];
-      var img = new Image();
-      img.src = gidsync_url + params.join('&');
-    }
-
     // Handle permutive ready callback after it has populated the user ID
     function permutiveReadyHandler(){
 
@@ -225,7 +225,7 @@ Triggers on consent
       // });
 
       permutiveIdSet = true;
-      tryTrackPaveView();
+      tryTrackPageView();
 
       // Fetch user segments from TreasureData
       td.fetchUserSegments(
