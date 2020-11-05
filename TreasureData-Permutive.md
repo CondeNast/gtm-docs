@@ -20,7 +20,7 @@ Where possible we will integrate TreasureData with Condé Nast sites using GTM.
 This means that concerns like consent compliance and the order of loading
 dependencies is managed in GTM rather than being tightly coupled in javascript
 source code of our sites. The instructions for integrating TreasureData on a
-site tiwout GTM can be found here
+site without GTM can be found here
 https://tddocs.atlassian.net/wiki/spaces/PD/pages/1081498/Web+Tracking and the
 documentation of the TreasureData Javascript SDK is here
 https://github.com/treasure-data/td-js-sdk
@@ -260,108 +260,6 @@ Triggers on consent
     td.fetchServerCookie(sscSuccessCallback, sscErrorCallback);
 
   })(window, document, {{TreasureData Instance Name}});
-</script>
-```
-
-## TresureDate PageView Tag
-
-Calls TreasureData `trackEvent` to record the page view then passes the
-TreasuerData user id to Google.
-
-Triggers on
-[Permutive Ready and TresureData SCC](#permutive-ready-and-tresuredata-scc-trigger)
-
-```html
-<script>
-  (function(win,doc,tdName){
-    var td = win[tdName];
-
-    function googleSyncCallback() {
-      var gidsync_url = '//cm.g.doubleclick.net/pixel?';
-      var params = [
-        'google_nid=treasuredata_dmp',
-        'google_cm',
-        'td_write_key=' + {{TreasureData Write Key}},
-        'td_global_id=td_global_id',
-        'td_client_id=' + td.client.track.uuid,
-        'td_host=' + doc.location.host,
-        'account=' + {{TreasureData Account ID}}
-      ];
-      var img = new Image();
-      img.src = gidsync_url + params.join('&');
-    }
-
-    // Define event data
-    var data = {};
-    data["userAgent"] = {{userAgent}};
-    data["pageURL"] = {{pageURL}};
-    data["pageTitle"] = {{pageTitle}};
-    // ...add more values as required here...
-
-    // Send pageview event along with additional data
-    td.trackEvent(
-      {{TreasureData Pageview Event}},
-      data,
-      googleSyncCallback,
-      googleSyncCallback
-    );
-  })(window, document, {{TreasureData Instance Name}});
-</script>
-```
-
-## Permutive Set Email Hash Tag
-
-Calls Permutive `identify` to pass the email hash.
-
-Triggers on [TresureData Email Hash](#tresuredata-email-hash-trigger)
-
-```html
-<script>
-  (function(win){
-    var permutive = win["permutive"];
-    permutive.ready(function() {
-      permutive.identify([{
-        tag: "email_sha256",
-        id: {{Email Hash}},
-        priority: 1
-      }]);
-    });
-  })(window);
-</script>
-```
-
-## TreasureData Get Email Hash Tag
-
-Calls TreasureData with the permutive id to get the email hash and fire the
-[TresureData Email Hash](#tresuredata-email-hash-trigger) custom event.
-
-Triggers on [Permutive Ready](#permutive-ready-trigger)
-
-```html
-<script>
-  (function(win, tdName){
-    var td = win[tdName];
-    function success(values) {
-      if(
-        values.length > 0 &&
-        values[0].attributes &&
-        values[0].attributes.email_sha256
-      ){
-        var email_sha256 = values[0].attributes.email_sha256;
-        dataLayer.push({
-          "event":"email_hash",
-          "email_sha256": email_sha256
-        });
-      }
-    }
-    function error(err) {
-      console.log(err);
-    }
-    td.fetchUserSegments({
-      audienceToken: {{TreasureData Write Key}},
-      keys: {"permutive_id": {{Permutive User Id}}}
-    }, success, error);
-  })(window, {{TreasureData Instance Name}});
 </script>
 ```
 
