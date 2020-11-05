@@ -28,21 +28,17 @@ https://github.com/treasure-data/td-js-sdk
 To configure Permutive and TreasureData to operate on a page and share the
 required information we will need to add the following to our GTM configuration.
 
-# Sequence Diagram
-
-![Sequence Diagram](diagrams/sequence-diagram.svg) Edit
-[sequence-diagram.drawio](diagrams/sequence-diagram.drawio) with draw.io
-
 # Tags
 
 ## TreasureData Tag
 
 Initializes the TreasureData Javascript SDK and fetches the sever-side cookie.
 
-Triggers on **Page View**
+Triggers on consent
 
 ```html
 <script type="text/javascript">
+  // This is the boilerplate TD script
   !(function (t, e) {
     if (void 0 === e[t]) {
       (e[t] = function () {
@@ -97,7 +93,15 @@ Triggers on **Page View**
 </script>
 
 <script>
+
+  // Conde Nast specific TreasureData and Permutive integration
   (function(win,doc,tdName){
+
+    // Values must be true before the TreasureData page view event is sent
+    var tdSscSet = false;
+    var permutiveIdSet = false;
+
+    // Create an instance of the TreasureData SDK object and assign it to the global scope using the specified variable name
     var td = win[tdName] = new Treasure({
       host: 'eu01.in.treasuredata.com',
       database: {{TreasureData Database}},
@@ -107,81 +111,162 @@ Triggers on **Page View**
       useServerSideCookie: true
     });
 
+    // Attempt to send the treasure data pageView event if all the required values have been populated
+    function tryTrackPaveView(){
+
+      // Check all the required values are set before sending the PageView event.
+      if(!tdSscSet || !permutiveIdSet){
+        return;
+      }
+
+      // Define event data
+      var data = {};
+      data["userAgent"] = {{userAgent}};
+      data["pageURL"] = {{pageURL}};
+      data["pageTitle"] = {{pageTitle}};
+      // ...add more values as required here...
+
+      // Send PageView event along with additional data
+      td.trackEvent(
+        {{TreasureData Pageview Event}},
+        data,
+        googleSyncCallback,
+        googleSyncCallback
+      );
+    }
+
+    // Handle a successful attempt to get the Server-Side-Cookie identifier from TreasureData
     function sscSuccessCallback (result) {
+      // Populate a "global" value on the TreasureData instance so the Server-Side-Cookie identifier is sent with all TreasureData events
       td.set("$global", "td_ssc_id", result);
-      dataLayer.push({
-        event: "td_ssc_id_success",
-        td_ssc_id: result
-      });
+
+      // Push this event to the dataLayer with the Server-Side-Cookie identifier incase other scripts need to respond
+      // dataLayer.push({
+      //   event: "td_ssc_id_success",
+      //   td_ssc_id: result
+      // });
+
+      tdSscSet = true;
+      tryTrackPaveView();
     }
 
+    // Handle an unsuccessful attempt to get the Server-Side-Cookie identifier from TreasureData
     function sscErrorCallback () {
-      dataLayer.push({
-        event: "td_ssc_id_failed"
-      });
+      // Push this event to the dataLayer incase other scripts need to respond
+      // dataLayer.push({
+      //   event: "td_ssc_id_failed"
+      // });
+
+      tdSscSet = true;
+      tryTrackPaveView();
     }
 
-    td.set("$global","td_global_id","td_global_id");
-    td.fetchServerCookie(sscSuccessCallback, sscErrorCallback);
-  })(window, document, {{TreasureData Instance Name}});
-</script>
-```
+    // Handle a successful attempt to get the user segments from TreasureData
+    function userSegmentsSuccessCallback(values) {
+      if(
+        values.length > 0 &&
+        values[0].attributes &&
+        values[0].attributes.email_sha256
+      ){
+        var email_sha256 = values[0].attributes.email_sha256;
 
-## Permutive Ready Tag
+        // Set the email hash in permutive
+        win.permutive.identify([{
+          tag: "email_sha256",
+          id: email_sha256,
+          priority: 1
+        }]);
 
-Waits for permutive to be ready and then pushes the permutive user id into the
-data layer so other tags can use it.
-Duplicates the same ID value with the name `td_unknown_id`.
+        // Push the user segment data to the dataLayer
+        // dataLayer.push({
+        //   "event":"email_hash",
+        //   "email_sha256": email_sha256
+        // });
+      }
+    }
 
-Trigger as soon as `permutive` is defined.
+    // Handle an unsuccessful attempt to get the user segments from TreasureData
+    function userSegmentsErrorCallback(err) {
+      console.log(err);
+    }
 
-Conventionally this would be **Page View** however for the
-[Compass Rocket](https://github.com/condenast/rocket) application this needs to
-be **Window Load** because the permutive implementation is not included in the
-html `<head>` tag.
+    // Callback from TreasureData trackEvent
+    function googleSyncCallback() {
 
-```html
-<script>
-  if (permutive && permutive.ready) {
-    permutive.ready(function () {
-      dataLayer.push({
-        event: "permutive_ready",
-        permutive_user_id: permutive.context.user_id,
-      });
-  
-      // Requirement of TreasureData that permutive duplicates it's own ID with a diffrent name.
-      permutive.identify([{
+      // Invokes a request to google ad network
+      var gidsync_url = '//cm.g.doubleclick.net/pixel?';
+      var params = [
+        'google_nid=treasuredata_dmp',
+        'google_cm',
+        'td_write_key=' + {{TreasureData Write Key}},
+        'td_global_id=td_global_id',
+        'td_client_id=' + td.client.track.uuid,
+        'td_host=' + doc.location.host,
+        'account=' + {{TreasureData Account ID}}
+      ];
+      var img = new Image();
+      img.src = gidsync_url + params.join('&');
+    }
+
+    // Handle permutive ready callback after it has populated the user ID
+    function permutiveReadyHandler(){
+
+      // Requirement of TreasureData that permutive duplicates it's own ID with a different name.
+      win.permutive.identify([{
         tag: "td_unknown_id",
-        id: permutive.context.user_id,
+        id: win.permutive.context.user_id,
         priority: 0
       }]);
-  
-    });
-  } else {
-    console.error("Permutive not available");
-  }
-</script>
-```
 
-## TreasureData Set Permutive ID Tag
+      // Push permutive id to the dataLayer
+      // win.dataLayer.push({
+      //   event: "permutive_ready",
+      //   permutive_user_id: win.permutive.context.user_id,
+      // });
 
-Sets the permutive user id on all calls to TreasureData
+      permutiveIdSet = true;
+      tryTrackPaveView();
 
-Triggers on [Permutive Ready](#permutive-ready-trigger)
+      // Fetch user segments from TreasureData
+      td.fetchUserSegments(
+        {
+          audienceToken: {{TreasureData Write Key}},
+          keys: {"permutive_id": {{Permutive User Id}}}
+        },
+        userSegmentsSuccessCallback,
+        userSegmentsErrorCallback
+      );
+    }
 
-```html
-<script>
-  (function(win,doc,tdName){
-    var td = win[tdName];
-    td.set('$global', 'td_unknown_id', {{Permutive User ID}});
+    // Attempts to setup permutive ready handler is permutive is available on the global scope
+    function trySetPermutiveReadyHandler(){
+      if (win.permutive && win.permutive.ready) {
+        win.permutive.ready(permutiveReadyHandler);
+        return true;
+      }
+      return false;
+    }
+
+    // Try to setup permutive ready handler
+    if(!trySetPermutiveReadyHandler()){
+      // If initial ready handler couldn't be set, wait for all resources in the window to load and try again
+      win.addEventListener('load', trySetPermutiveReadyHandler);
+    }
+
+    // Set the literal string "td_global_id" to be sent with all TreasureData events (unclear why)
+    td.set("$global","td_global_id","td_global_id");
+
+    // Initiate the call to get the Server-Side-Cookie identifier from TreasureData
+    td.fetchServerCookie(sscSuccessCallback, sscErrorCallback);
+
   })(window, document, {{TreasureData Instance Name}});
 </script>
 ```
 
 ## TresureDate PageView Tag
 
-Calls TreasureData `trackEvent` to record the page view then passes the TreasuerData user id to
-Google.
+Calls TreasureData `trackEvent` to record the page view then passes the
+TreasuerData user id to Google.
 
 Triggers on
 [Permutive Ready and TresureData SCC](#permutive-ready-and-tresuredata-scc-trigger)
@@ -190,7 +275,7 @@ Triggers on
 <script>
   (function(win,doc,tdName){
     var td = win[tdName];
-  
+
     function googleSyncCallback() {
       var gidsync_url = '//cm.g.doubleclick.net/pixel?';
       var params = [
@@ -282,74 +367,9 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
 
 # Triggers
 
-Fires when Permutive has loaded and set the
-[Permutive User ID](#permutive-user-id) variable
-
-## Permutive Ready Trigger
-
-| Property              | Value             |
-| --------------------- | ----------------- |
-| Trigger Type          | Custom event      |
-| Event Name            | `permutive_ready` |
-| Use regex matching    | No                |
-| This trigger fires on | All Custom Events |
-
-## TresureData SCC Trigger
-
-Fires when the server-side-cookie is received or the request fails.
-
-| Property              | Value             |
-| --------------------- | ----------------- |
-| Trigger Type          | Custom event      |
-| Event Name            | `/^td_scc_.*/`    |
-| Use regex matching    | Yes               |
-| This trigger fires on | All Custom Events |
-
-## Permutive Ready and TresureData SCC Trigger
-
-Fires when _both_ the [Permutive Ready](#permutive-ready-trigger) and
-[TresureData SCC](#tresuredata-scc-trigger) triggers have fired.
-
-| Property              | Value                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| Trigger Type          | Trigger Group                                                                               |
-| Triggers              | [Permutive Ready](#permutive-ready-trigger) and [TresureData SCC](#tresuredata-scc-trigger) |
-| This trigger fires on | All Conditions                                                                              |
-
-## TresureData Email Hash Trigger
-
-Fires when the user's email hash is received.
-
-| Property              | Value             |
-| --------------------- | ----------------- |
-| Trigger Type          | Custom event      |
-| Event Name            | `email_hash`      |
-| Use regex matching    | No                |
-| This trigger fires on | All Custom Events |
+None
 
 # Variables
-
-## Email Hash
-
-Hash of the user's email address.
-
-| Property            | Value               |
-| ------------------- | ------------------- |
-| Variable Type       | Data Layer Variable |
-| Data Layer Variable | `email_sha256`      |
-| Data Layer Version  | Version 2           |
-| Set Default Value   | No                  |
-
-## Permutive User ID
-
-Unique ID of the user received from Permutive.
-
-| Property            | Value               |
-| ------------------- | ------------------- |
-| Variable Type       | Data Layer Variable |
-| Data Layer Variable | `permutive_user_id` |
-| Data Layer Version  | Version 2           |
-| Set Default Value   | No                  |
 
 ## TreasureData Database
 
