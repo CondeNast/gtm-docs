@@ -95,7 +95,16 @@ Triggers on consent
 <script>
 
   // Conde Nast specific TreasureData and Permutive integration
-  (function(win,doc,tdName){
+  (function(
+    win,
+    doc,
+    eventData,
+    tdName,
+    treasureDataWriteKey,
+    treasureDataDatabase,
+    treasureDataAccountId,
+    pageViewEventName
+  ){
 
     // Values must be true before the TreasureData page view event is sent
     var tdSscSet = false;
@@ -104,8 +113,8 @@ Triggers on consent
     // Create an instance of the TreasureData SDK object and assign it to the global scope using the specified variable name
     var td = win[tdName] = new Treasure({
       host: 'eu01.in.treasuredata.com',
-      database: {{TreasureData Database}},
-      writeKey: {{TreasureData Write Key}},
+      database: treasureDataDatabase,
+      writeKey: treasureDataWriteKey,
       trackCrossDomain: true,
       startInSignedMode: true,
       useServerSideCookie: true
@@ -119,11 +128,11 @@ Triggers on consent
       var params = [
         'google_nid=treasuredata_dmp',
         'google_cm',
-        'td_write_key=' + {{TreasureData Write Key}},
+        'td_write_key=' + treasureDataWriteKey,
         'td_global_id=td_global_id',
         'td_client_id=' + td.client.track.uuid,
         'td_host=' + doc.location.host,
-        'account=' + {{TreasureData Account ID}}
+        'account=' + treasureDataAccountId
       ];
       var img = new Image();
       img.src = gidsync_url + params.join('&');
@@ -137,17 +146,10 @@ Triggers on consent
         return;
       }
 
-      // Define event data
-      var data = {};
-      data["userAgent"] = {{userAgent}};
-      data["pageURL"] = {{pageURL}};
-      data["pageTitle"] = {{pageTitle}};
-      // ...add more values as required here...
-
       // Send PageView event along with additional data
       td.trackEvent(
-        {{TreasureData Pageview Event}},
-        data,
+        pageViewEventName,
+        eventData,
         googleSyncCallback,
         googleSyncCallback
       );
@@ -211,17 +213,19 @@ Triggers on consent
     // Handle permutive ready callback after it has populated the user ID
     function permutiveReadyHandler(){
 
+      var permutiveUserId = win.permutive.context.user_id;
+
       // Requirement of TreasureData that permutive duplicates it's own ID with a different name.
       win.permutive.identify([{
         tag: "td_unknown_id",
-        id: win.permutive.context.user_id,
+        id: permutiveUserId,
         priority: 0
       }]);
 
       // Push permutive id to the dataLayer
       // win.dataLayer.push({
       //   event: "permutive_ready",
-      //   permutive_user_id: win.permutive.context.user_id,
+      //   permutive_user_id: permutiveUserId,
       // });
 
       permutiveIdSet = true;
@@ -230,8 +234,8 @@ Triggers on consent
       // Fetch user segments from TreasureData
       td.fetchUserSegments(
         {
-          audienceToken: {{TreasureData Write Key}},
-          keys: {"permutive_id": {{Permutive User Id}}}
+          audienceToken: treasureDataWriteKey},
+          keys: {"permutive_id": permutiveUserId)
         },
         userSegmentsSuccessCallback,
         userSegmentsErrorCallback
@@ -259,7 +263,22 @@ Triggers on consent
     // Initiate the call to get the Server-Side-Cookie identifier from TreasureData
     td.fetchServerCookie(sscSuccessCallback, sscErrorCallback);
 
-  })(window, document, {{TreasureData Instance Name}});
+  })(
+    window,
+    document,
+    {
+      // Define event data
+      // add more values as required here
+      "userAgent": {{userAgent}},
+      "pageURL": {{pageURL}},
+      "pageTitle": {{pageTitle}}
+    },
+    {{TreasureData Instance Name}},
+    {{TreasureData Write Key}),
+    {{TreasureData Database}},
+    {{TreasureData Account ID}},
+    {{TreasureData Pageview Event}}
+  )
 </script>
 ```
 
