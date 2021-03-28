@@ -33,7 +33,8 @@ required information we will need to add the following to our GTM configuration.
 ![Sequence Diagram](diagrams/sequence-diagram.svg) Edit
 [sequence-diagram.drawio](diagrams/sequence-diagram.drawio) with draw.io
 
-Note that the following GTM configurations do not include additional tags, triggers, and variables needed for ecommerce events for TD. TD Ecommerce configurations through GTM can be found in the TreasureData-Ecommerce document.
+# TreasureData Ecommerce Events
+Note that the following GTM configurations do not include additional tags, triggers, and variables needed for ecommerce events for TD. TD Ecommerce configurations through GTM can be found in the [TreasureData Ecommerce](TreasureData-Ecommerce.md) document.
 
 # Tags
 
