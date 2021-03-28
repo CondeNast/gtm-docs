@@ -33,11 +33,15 @@ required information we will need to add the following to our GTM configuration.
 ![Sequence Diagram](diagrams/sequence-diagram.svg) Edit
 [sequence-diagram.drawio](diagrams/sequence-diagram.drawio) with draw.io
 
+<<<<<<< HEAD
 # GTM Zones - Global Container (GTM-KSK3JJ9)
 Our current TreasureData implementation leverages a [GTM zone](https://support.google.com/tagmanager/answer/7647043?hl=en) to manage the setup across all GTM containers. GTM Zones allow a GTM container to load another GTM container. GTM Zones are completely handled through the GTM web UI and do not require adding any additional GTM scripts to the page. This setup 1) minimizes the size of the local GTM container (200KB limit) and 2) does not require additional dev work to the page.
 
 # TreasureData Ecommerce Events
 Note that the following GTM configurations do not include additional tags, triggers, and variables needed for ecommerce events for TD. TD Ecommerce configurations through GTM can be found in the [TreasureData Ecommerce](TreasureData-Ecommerce.md) document.
+=======
+Note that the following GTM configurations do not include additional tags, triggers, and variables needed for ecommerce events for TD. TD Ecommerce configurations through GTM can be found in the TreasureData-Ecommerce document.
+>>>>>>> parent of a798292 (Update TreasureData-Permutive.md)
 
 # Tags
 
