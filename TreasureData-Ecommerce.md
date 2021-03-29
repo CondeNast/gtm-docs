@@ -110,9 +110,9 @@ Triggers on: **eecRemoveFromCart**
 </script>
 ```
 ## TreasureData - Ecomm Tag - Check out
-Calls TreasureData `trackEvent` to record checkouts and passes in `ecommData`. Also sends user's email and communication permissions (newsletter or marketing) during checkout for targeting purposes. Triggers on `eecCheckout` OR `Trigger Group (CE - eecCheckout && Window Loaded - All Pages)` in the event that `eecCheckout` fires before the TreasureData SDK loads. 
+Calls TreasureData `trackEvent` to record checkouts and passes in `ecommData`. Also sends user's email and communication permissions (newsletter or marketing) during checkout for targeting purposes. Triggers on `Trigger Group (CE - eecCheckout && Window Loaded - All Pages)` in the event that `eecCheckout` fires before the TreasureData SDK loads. 
 
-Triggers on: **eecCheckout** OR **Trigger Group (CE - eecCheckout && Window Loaded - All Pages)**.
+Triggers on: **Trigger Group (CE - eecCheckout && Window Loaded - All Pages)**.
 
 ```html
 <script>
@@ -134,9 +134,9 @@ Triggers on: **eecCheckout** OR **Trigger Group (CE - eecCheckout && Window Load
 ```
 
 ## TreasureData - Ecomm Tag - Purchase
-Calls TreasureData `trackEvent` to record purchases and passes in `ecommData`.
+Calls TreasureData `trackEvent` to record purchases and passes in `ecommData`. Triggers on `Trigger Group (CE - transaction Events && Window Loaded - All Pages)` in the event that `CE - transaction Events` fires before the TreasureData SDK loads.
 
-Triggers on: **CE - transaction Events** OR **Trigger Group (CE - transaction events && Window Loaded - All Pages)**.
+Triggers on: **Trigger Group (CE - transaction events && Window Loaded - All Pages)**.
 
 ```html
 <script>
