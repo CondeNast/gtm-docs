@@ -168,7 +168,7 @@ The TreasureData Pageview Tag does a few things before calling TreasureData `tra
 3. Defines `data`, which is an object of all the variables we want to send to TreasureData. `data` gets its values from places like the dataLayer and document object properties/methods.
 
 Triggers on
-Trigger Group - (CE - permutive_ready | CE - td_ssc events), which is a Trigger Group of 2 triggers:
+Trigger Group - (CE - permutive_ready && CE - td_ssc events), which is a Trigger Group of 2 triggers:
 1. CE - permutive_ready
 2. CE - td_ssc
 
@@ -235,7 +235,7 @@ Trigger Group - (CE - permutive_ready | CE - td_ssc events), which is a Trigger 
 
 Calls TreasureData with the Permutive ID to get the email_sha256.  This sends both email_sha256 and Permutive ID to TD for the market master segment. Please note that each market has a different Master Segments API Key to drop in place of any temp keys.
 
-Triggers on Trigger Group - (Window Loaded - All Pages | CE - OneTrust Consent Events - Targeting | CE - permutive_ready), which is a Trigger Group of 3 triggers:
+Triggers on Trigger Group - (Window Loaded - All Pages && CE - OneTrust Consent Events - Targeting && CE - permutive_ready), which is a Trigger Group of 3 triggers:
 1. Window Loaded - All Pages
 2. CE - OneTrust Consent Events - Targeting
 3. CE - permutive_ready
@@ -306,7 +306,7 @@ Fires when the user's email hash is received.
 | Use regex matching    | No                |
 | This trigger fires on | All Custom Events |
 
-## Trigger Group - (CE - permutive_ready | CE - td_ssc events)
+## Trigger Group - (CE - permutive_ready && CE - td_ssc events)
 
 Fires when _both_ the [permutive_ready](#permutive-ready-trigger) and
 [td_ssc](#treasuredata-scc-trigger) triggers have fired.
@@ -317,7 +317,7 @@ Fires when _both_ the [permutive_ready](#permutive-ready-trigger) and
 | Triggers              | [Permutive Ready](#permutive-ready-trigger) and [TresaureData SCC](#treasuredata-scc-trigger) |
 | This trigger fires on | All Conditions                                                                              |
 
-## Trigger Group - (Window Loaded - All Pages | CE - OneTrust Consent Events - Targeting | CE - permutive_ready)
+## Trigger Group - (Window Loaded - All Pages && CE - OneTrust Consent Events - Targeting && CE - permutive_ready)
 
 Fires when Window Loaded, OneTrust Consent Events - Targeting, and permutive_ready and the TD Master Segments API key has been set
 
