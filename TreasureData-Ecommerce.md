@@ -15,6 +15,8 @@ Examples of ecommerce events:
 5. eecCheckout
 6. eecTransaction
 
+Note: ecommerce events need to fire after the Global Container loads. Otherwise, the Global Container won't detect that the event already fired and tags won't fire correctly.
+
 # Tags
 
 ## TreasureData - Ecomm Tag - Product Click
