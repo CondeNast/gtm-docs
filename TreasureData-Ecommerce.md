@@ -39,6 +39,10 @@ Triggers on: **eecClick**
     return ecommData;
   }
   td.trackEvent({{LT - TreasureData Ecom Events Table}}, productClickData());
+  
+  if ({{DL - user.account.email}}) {
+    td.set('$global', 'User Account Email', {{DL - user.account.email}});
+  }
 </script>
 ```
 ## TreasureData - Ecomm Tag - Product Impression
@@ -61,6 +65,10 @@ Triggers on: **eecImpression**
     return ecommData;
   }
   td.trackEvent({{LT - TreasureData Ecom Events Table}}, productImpressionData());
+  
+  if ({{DL - user.account.email}}) {
+    td.set('$global', 'User Account Email', {{DL - user.account.email}});
+  }
 </script>
 ```
 
@@ -85,6 +93,10 @@ Triggers on: **eecAddToCart**
     return ecommData;
   }
   td.trackEvent({{LT - TreasureData Ecom Events Table}}, addToCartData());
+  
+  if ({{DL - user.account.email}}) {
+    td.set('$global', 'User Account Email', {{DL - user.account.email}});
+  }
 </script>
 ```
 
@@ -109,6 +121,10 @@ Triggers on: **eecRemoveFromCart**
     return ecommData;
   }
   td.trackEvent({{LT - TreasureData Ecom Events Table}}, removeFromCartData());
+  
+  if ({{DL - user.account.email}}) {
+    td.set('$global', 'User Account Email', {{DL - user.account.email}});
+  }
 </script>
 ```
 ## TreasureData - Ecomm Tag - Check out
@@ -132,6 +148,10 @@ Triggers on: **Trigger Group (CE - eecCheckout && Window Loaded - All Pages)**.
     return ecommData
   }
   td.trackEvent({{LT - TreasureData Ecom Events Table}}, checkoutData());
+  
+  if ({{DL - user.account.email}}) {
+    td.set('$global', 'User Account Email', {{DL - user.account.email}});
+  }
 </script>
 ```
 
@@ -155,6 +175,10 @@ Triggers on: **Trigger Group (CE - transaction events && Window Loaded - All Pag
     return ecommData;
   }  
   td.trackEvent({{LT - TreasureData Ecom Events Table}}, purchaseData());
+  
+  if ({{DL - user.account.email}}) {
+    td.set('$global', 'User Account Email', {{DL - user.account.email}});
+  }
 </script>
 ```
 
@@ -250,3 +274,4 @@ Regex lookup table of TreasureData ecom events table to store values. Looks at {
 |ecommerce.checkout.marketing_permissions |the ecommerce checkout.marketing_permissions variable and is et when a user agrees to marketing communications|
 |ecommerce.checkout.newsletter_permissions |the ecommerce checkout.newsletter_permissions variable and is set when a user agrees to newsletter communications|
 |ecommerce.purchase|the ecommerce purchase object|
+|ecommerce.cartId|the cart ID that was created for the user. some markets use member ID for signed in users to determine unique cart instances|
