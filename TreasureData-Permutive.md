@@ -218,6 +218,10 @@ Trigger Group - (CE - permutive_ready && CE - td_ssc events), which is a Trigger
 	  
       //Set GA Client ID globally
       td.set('$global', 'GA Client ID', gaId);
+	
+      if ({{DL - user.account.email}}) {
+        td.set('$global', 'User Account Email', {{DL - user.account.email}});
+      }
   
       // Send pageview event along with additional data
       td.trackEvent(
