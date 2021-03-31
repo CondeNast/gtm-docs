@@ -33,14 +33,21 @@ required information we will need to add the following to our GTM configuration.
 ![Sequence Diagram](diagrams/sequence-diagram.svg) Edit
 [sequence-diagram.drawio](diagrams/sequence-diagram.drawio) with draw.io
 
+# GTM Zones - Global Container (GTM-KSK3JJ9)
+Our current TreasureData implementation leverages a [GTM zone](https://support.google.com/tagmanager/answer/7647043?hl=en) to manage the setup across all GTM containers. GTM Zones allow a GTM container to load another GTM container. GTM Zones are completely handled through the GTM web UI and do not require adding any additional GTM scripts to the page. This setup 1) minimizes the size of the local GTM container (200KB limit) and 2) does not require additional dev work to the page.
+
+# TreasureData Ecommerce Events
+Note that the following GTM configurations do not include additional tags, triggers, and variables needed for ecommerce events for TD. TD Ecommerce configurations through GTM can be found in the [TreasureData Ecommerce](TreasureData-Ecommerce.md) document.
+
 # Tags
 
 ## TreasureData Tag
 
 Initializes the TreasureData Javascript SDK and fetches the sever-side cookie.
 
-Triggers on **Page View**
-
+Triggers on:
+1. **Page View**: Fires immediately when the browser loads the page and user has already consented to Targeting cookies.
+2. **CE - OneTrust Consent Events - Targeting**: Fires when a user consents to Targeting cookies. dataLayer events OneTrustGroupsUpdated and OneTrustLoaded are emitted from OneTrust when a user consents to cookie tracking or updates consent settings. 
 ```html
 <script type="text/javascript">
   !(function (t, e) {
@@ -99,9 +106,9 @@ Triggers on **Page View**
 <script>
   (function(win,doc,tdName){
     var td = win[tdName] = new Treasure({
-      host: 'eu01.in.treasuredata.com',
-      database: {{TreasureData Database}},
-      writeKey: {{TreasureData Write Key}},
+      host: {{Constant - TreasureData Host}},
+      database: {{LT - TreasureData Database}},
+      writeKey: {{LT - TreasureData Write Key}},
       trackCrossDomain: true,
       startInSignedMode: true,
       useServerSideCookie: true
@@ -109,6 +116,7 @@ Triggers on **Page View**
 
     function sscSuccessCallback (result) {
       td.set("$global", "td_ssc_id", result);
+      console.log("$global td_ssc_id set to '" + result + "'");
       dataLayer.push({
         event: "td_ssc_id_success",
         td_ssc_id: result
@@ -123,15 +131,13 @@ Triggers on **Page View**
 
     td.set("$global","td_global_id","td_global_id");
     td.fetchServerCookie(sscSuccessCallback, sscErrorCallback);
-  })(window, document, {{TreasureData Instance Name}});
+  })(window, document, {{Constant - TreasureData Instance Name}});
 </script>
 ```
 
 ## Permutive Ready Tag
 
-Waits for permutive to be ready and then pushes the permutive user id into the
-data layer so other tags can use it.
-Duplicates the same ID value with the name `td_unknown_id`.
+Waits for Permutive to be ready and then pushes the dataLayer permutive_ready event so other tags know that Permutive is ready and can trigger off permutive_ready.
 
 Trigger as soon as `permutive` is defined.
 
@@ -142,20 +148,11 @@ html `<head>` tag.
 
 ```html
 <script>
-  if (permutive && permutive.ready) {
+  if (typeof permutive != "undefined") {
     permutive.ready(function () {
       dataLayer.push({
-        event: "permutive_ready",
-        permutive_user_id: permutive.context.user_id,
+        event: "permutive_ready"
       });
-  
-      // Requirement of TreasureData that permutive duplicates it's own ID with a diffrent name.
-      permutive.identify([{
-        tag: "td_unknown_id",
-        id: permutive.context.user_id,
-        priority: 0
-      }]);
-  
     });
   } else {
     console.error("Permutive not available");
@@ -163,94 +160,89 @@ html `<head>` tag.
 </script>
 ```
 
-## TreasureData Set Permutive ID Tag
+## TreasureData Pageview Tag
 
-Sets the permutive user id on all calls to TreasureData
-
-Triggers on [Permutive Ready](#permutive-ready-trigger)
-
-```html
-<script>
-  (function(win,doc,tdName){
-    var td = win[tdName];
-    td.set('$global', 'td_unknown_id', {{Permutive User ID}});
-  })(window, document, {{TreasureData Instance Name}});
-</script>
-```
-
-## TresureDate PageView Tag
-
-Calls TreasureData `trackEvent` to record the page view then passes the TreasuerData user id to
-Google.
+The TreasureData Pageview Tag does a few things before calling TreasureData `trackEvent` to record the page view:
+1. Sets the Permutive user ID on all calls to TreasureData with td.set()
+2. Creates googleSyncCallback() to pass the TreasureData user ID to Google when it's called during TreasureData `trackEvent` at the end of the script
+3. Defines `data`, which is an object of all the variables we want to send to TreasureData. `data` gets its values from places like the dataLayer and document object properties/methods.
 
 Triggers on
-[Permutive Ready and TresureData SCC](#permutive-ready-and-tresuredata-scc-trigger)
+Trigger Group - (CE - permutive_ready && CE - td_ssc events), which is a Trigger Group of 2 triggers:
+1. CE - permutive_ready
+2. CE - td_ssc
 
 ```html
 <script>
   (function(win,doc,tdName){
     var td = win[tdName];
-  
+    
+    var permutiveId = permutive.context.user_id
+    td.set('$global', 'td_unknown_id', permutiveId);
+    permutive.identify([{
+                        tag: 'td_unknown_id',
+                        id: permutiveId,
+                        priority: 0
+                    }]);
+    
+    
     function googleSyncCallback() {
       var gidsync_url = '//cm.g.doubleclick.net/pixel?';
       var params = [
         'google_nid=treasuredata_dmp',
         'google_cm',
-        'td_write_key=' + {{TreasureData Write Key}},
+        'td_write_key=' + {{Constant - TreasureData DMP Key}},
         'td_global_id=td_global_id',
         'td_client_id=' + td.client.track.uuid,
         'td_host=' + doc.location.host,
-        'account=' + {{TreasureData Account ID}}
+        'account=' + {{Constant - TreasureData Account ID}}
       ];
       var img = new Image();
       img.src = gidsync_url + params.join('&');
     }
 
-    // Define event data
-    var data = {};
-    data["userAgent"] = {{userAgent}};
-    data["pageURL"] = {{pageURL}};
-    data["pageTitle"] = {{pageTitle}};
-    // ...add more values as required here...
+    ga(function(){
+     var gaId = "";
+     var trackers = ga.getAll();
+     if (trackers && trackers[0]) {
+       gaId = trackers[0].get('clientId');
+     }
 
-    // Send pageview event along with additional data
-    td.trackEvent(
-      {{TreasureData Pageview Event}},
-      data,
-      googleSyncCallback,
-      googleSyncCallback
-    );
-  })(window, document, {{TreasureData Instance Name}});
-</script>
-```
+      // Define event data
+	  var data = {};
+	  data["pageTemplate"] = {{CJS - Page Template}};
+	  data["Distribution Platform"] = {{CJS - Distribution Platform}};
+	  data["Browser language "] = {{JSV - navigator.language}};
+	  // ...add more values as required here...
 
-## Permutive Set Email Hash Tag
-
-Calls Permutive `identify` to pass the email hash.
-
-Triggers on [TresureData Email Hash](#tresuredata-email-hash-trigger)
-
-```html
-<script>
-  (function(win){
-    var permutive = win["permutive"];
-    permutive.ready(function() {
-      permutive.identify([{
-        tag: "email_sha256",
-        id: {{Email Hash}},
-        priority: 1
-      }]);
+	  
+      //Set GA Client ID globally
+      td.set('$global', 'GA Client ID', gaId);
+	
+      if ({{DL - user.account.email}}) {
+        td.set('$global', 'User Account Email', {{DL - user.account.email}});
+      }
+  
+      // Send pageview event along with additional data
+      td.trackEvent(
+        {{LT - TreasureData Pageview Table}},
+        data,
+        googleSyncCallback,
+        googleSyncCallback
+      );
     });
-  })(window);
+  })(window, document, {{Constant - TreasureData Instance Name}});
 </script>
 ```
 
-## TreasureData Get Email Hash Tag
+## TreasureData - Set Permutive email_sha256 to TD User Segment
 
-Calls TreasureData with the permutive id to get the email hash and fire the
-[TresureData Email Hash](#tresuredata-email-hash-trigger) custom event.
+Calls TreasureData with the Permutive ID to get the email_sha256.  This sends both email_sha256 and Permutive ID to TD for the market master segment. Please note that each market has a different Master Segments API Key to drop in place of any temp keys.
 
-Triggers on [Permutive Ready](#permutive-ready-trigger)
+Triggers on Trigger Group - (Window Loaded - All Pages && CE - OneTrust Consent Events - Targeting && CE - permutive_ready), which is a Trigger Group of 3 triggers:
+1. Window Loaded - All Pages
+2. CE - OneTrust Consent Events - Targeting
+3. CE - permutive_ready
 
 ```html
 <script>
@@ -263,29 +255,31 @@ Triggers on [Permutive Ready](#permutive-ready-trigger)
         values[0].attributes.email_sha256
       ){
         var email_sha256 = values[0].attributes.email_sha256;
-        dataLayer.push({
-          "event":"email_hash",
-          "email_sha256": email_sha256
-        });
+       
+            permutive.identify([{
+              tag: "email_sha256",
+              id: email_sha256,
+              priority: 1
+            }]);
       }
     }
     function error(err) {
       console.log(err);
     }
     td.fetchUserSegments({
-      audienceToken: {{TreasureData Write Key}},
-      keys: {"permutive_id": {{Permutive User Id}}}
+      audienceToken: {{LT - TreasureData Master Segments API Key}},
+      keys: {"permutiveid": permutive.context.user_id}
     }, success, error);
-  })(window, {{TreasureData Instance Name}});
+  })(window, {{Constant - TreasureData Instance Name}});
 </script>
 ```
 
 # Triggers
 
+## Permutive Ready Trigger
+
 Fires when Permutive has loaded and set the
 [Permutive User ID](#permutive-user-id) variable
-
-## Permutive Ready Trigger
 
 | Property              | Value             |
 | --------------------- | ----------------- |
@@ -294,7 +288,7 @@ Fires when Permutive has loaded and set the
 | Use regex matching    | No                |
 | This trigger fires on | All Custom Events |
 
-## TresureData SCC Trigger
+## TreasureData SCC Trigger
 
 Fires when the server-side-cookie is received or the request fails.
 
@@ -305,18 +299,7 @@ Fires when the server-side-cookie is received or the request fails.
 | Use regex matching    | Yes               |
 | This trigger fires on | All Custom Events |
 
-## Permutive Ready and TresureData SCC Trigger
-
-Fires when _both_ the [Permutive Ready](#permutive-ready-trigger) and
-[TresureData SCC](#tresuredata-scc-trigger) triggers have fired.
-
-| Property              | Value                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| Trigger Type          | Trigger Group                                                                               |
-| Triggers              | [Permutive Ready](#permutive-ready-trigger) and [TresureData SCC](#tresuredata-scc-trigger) |
-| This trigger fires on | All Conditions                                                                              |
-
-## TresureData Email Hash Trigger
+## TreasureData Email Hash Trigger
 
 Fires when the user's email hash is received.
 
@@ -327,41 +310,30 @@ Fires when the user's email hash is received.
 | Use regex matching    | No                |
 | This trigger fires on | All Custom Events |
 
+## Trigger Group - (CE - permutive_ready && CE - td_ssc events)
+
+Fires when _both_ the [permutive_ready](#permutive-ready-trigger) and
+[td_ssc](#treasuredata-scc-trigger) triggers have fired.
+
+| Property              | Value                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| Trigger Type          | Trigger Group                                                                               |
+| Triggers              | [Permutive Ready](#permutive-ready-trigger) and [TresaureData SCC](#treasuredata-scc-trigger) |
+| This trigger fires on | All Conditions                                                                              |
+
+## Trigger Group - (Window Loaded - All Pages && CE - OneTrust Consent Events - Targeting && CE - permutive_ready)
+
+Fires when Window Loaded, OneTrust Consent Events - Targeting, and permutive_ready and the TD Master Segments API key has been set
+
+| Property              | Value                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| Trigger Type          | Trigger Group                                                                               |
+| Triggers              | Window Loaded, OneTrust Consent Events - Targeting, and permutive_ready |
+| This trigger fires on | LT - TreasureData Master Segments API Key does not equal undefined                          |
+
 # Variables
 
-## Email Hash
-
-Hash of the user's email address.
-
-| Property            | Value               |
-| ------------------- | ------------------- |
-| Variable Type       | Data Layer Variable |
-| Data Layer Variable | `email_sha256`      |
-| Data Layer Version  | Version 2           |
-| Set Default Value   | No                  |
-
-## Permutive User ID
-
-Unique ID of the user received from Permutive.
-
-| Property            | Value               |
-| ------------------- | ------------------- |
-| Variable Type       | Data Layer Variable |
-| Data Layer Variable | `permutive_user_id` |
-| Data Layer Version  | Version 2           |
-| Set Default Value   | No                  |
-
-## TreasureData Database
-
-Name of the TreasureData database to store values. You can see this list of
-databases in the console https://console.eu01.treasuredata.com/app/databases
-
-| Property      | Value                 |
-| ------------- | --------------------- |
-| Variable Type | Constant              |
-| Value         | `cdp_audience_109553` |
-
-## TreasureData Instance Name
+## Constant - TreasureData Instance Name
 
 Name of the globally scoped variable that holds the instance of the TreasureData
 javascript SDK. IN documentation examples this is usually `td`. A constant is
@@ -373,17 +345,8 @@ the page.
 | Variable Type | Constant |
 | Value         | `td`     |
 
-## TreasureData Write Key
 
-Key identifying the client with permission to send data to TreasureData. This
-should be available in the TreasureData console under “Profile API Tokens”
-
-| Property      | Value                                  |
-| ------------- | -------------------------------------- |
-| Variable Type | Constant                               |
-| Value         | `75b7e70b-b035-4c9c-8b0d-4cfbfe712c00` |
-
-## TreasureData Account ID
+## Constant - TreasureData Account ID
 
 The ID of the account with TreasureData. This will be in a format like this:
 `eu01-01`.
@@ -392,3 +355,56 @@ The ID of the account with TreasureData. This will be in a format like this:
 | ------------- | --------- |
 | Variable Type | Constant  |
 | Value         | `eu01-57` |
+
+## Constant - TreasureData DMP Key
+
+The TD DMP key that's sent to Google when calling googleSyncCallback().
+
+| Property      | Value     |
+| ------------- | --------- |
+| Variable Type | Constant  |
+| Value         | `8151/fcd628065149d648b80f11448b4083528c0d8a91` |
+
+## Constant - TreasureData Host
+
+The host for where TD requests should be sent to.
+
+| Property      | Value     |
+| ------------- | --------- |
+| Variable Type | Constant  |
+| Value         | `eu01.in.treasuredata.com` 
+
+## LT - TreasureData Master Segments API Key
+
+Regex lookup table of TD Master Segments API Keys. Looks at {{Page URL}} to determine which value should be outputted.
+
+| Property      | Value                 |
+| ------------- | --------------------- |
+| Variable Type | Regex Table              |
+
+
+## LT - TreasureData Pageview Table
+
+Regex lookup table of TD pageview tables to determine which table should store the data. Looks at {{Page URL}} to determine which value should be outputted.
+
+| Property      | Value                 |
+| ------------- | --------------------- |
+| Variable Type | Regex Table              |
+
+
+## LT - TreasureData Database
+
+Regex lookup table of TreasureData database to store values. Looks at {{Page URL}} to determine which value should be outputted. You can see this list of
+databases in the console https://console.eu01.treasuredata.com/app/databases
+
+| Property      | Value                 |
+| ------------- | --------------------- |
+| Variable Type | Regex Table              |
+
+## LT - TreasureData Write Key
+
+Regex lookup table of TreasureData write key that identifies the client with permission to send data to TreasureData. Looks at {{Page URL}} to determine which value should be outputted. This should be available in the TreasureData console under “Profile API Tokens”
+
+| Property      | Value                 |
+| ------------- | --------------------- |
+| Variable Type | Regex Table              |
