@@ -288,14 +288,14 @@ Fires when Permutive has loaded and set the
 | Use regex matching    | No                |
 | This trigger fires on | All Custom Events |
 
-## TreasureData SCC Trigger
+## TreasureData SSC Trigger
 
 Fires when the server-side-cookie is received or the request fails.
 
 | Property              | Value             |
 | --------------------- | ----------------- |
 | Trigger Type          | Custom event      |
-| Event Name            | `/^td_scc_.*/`    |
+| Event Name            | `/^td_ssc_.*/`    |
 | Use regex matching    | Yes               |
 | This trigger fires on | All Custom Events |
 
@@ -376,7 +376,7 @@ The host for where TD requests should be sent to.
 
 ## LT - TreasureData Master Segments API Key
 
-Regex lookup table of TD Master Segments API Keys. Looks at {{Page URL}} to determine which value should be outputted.
+Regex lookup table of TD Master Segments API Keys. Looks at {{Page URL}} to determine which value should be outputted. This API key will be the global temp key until the market has launched their master segment. API is also know as “Profile API Tokens” in TD.
 
 | Property      | Value                 |
 | ------------- | --------------------- |
@@ -403,7 +403,7 @@ databases in the console https://console.eu01.treasuredata.com/app/databases
 
 ## LT - TreasureData Write Key
 
-Regex lookup table of TreasureData write key that identifies the client with permission to send data to TreasureData. Looks at {{Page URL}} to determine which value should be outputted. This should be available in the TreasureData console under “Profile API Tokens”
+Regex lookup table of TreasureData write key that identifies the client with permission to send data to TreasureData. Looks at {{Page URL}} to determine which value should be outputted. This will be provided by the project delivery team who generate from the Treasure Data platform via admin rights. 
 
 | Property      | Value                 |
 | ------------- | --------------------- |
